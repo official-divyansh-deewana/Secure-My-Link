@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LinkGuard Pro | Ultimate Security Locker</title>
+    
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #00f2ea;
+            --primary-dark: #00c7c0;
+            --secondary: #ff0055;
+            --bg-dark: #050505;
+            --card-bg: rgba(20, 20, 25, 0.65);
+            --border: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --text-dim: #8b9bb4;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glow-primary: rgba(0, 242, 234, 0.3);
+            --gradient-main: linear-gradient(135deg, #00f2ea 0%, #ff0055 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .btn { font-family: 'Space Grotesk', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 242, 234, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255, 0, 85, 0.08), transparent 25%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Mesh */
+        .bg-mesh {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxmaWx0ZXIgaWQ9Im4iPjxmZVR1cmJ1bGVuY2UgdHlwZT0iZnJhY3RhbE5vaXNlIiBiYXNlRnJlcXVlbmN5PSIwLjYiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ0cmFuc3BhcmVudCIvPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIgZmlsdGVyPSJ1cmwoI24pIi8+PC9zdmc+');
+            z-index: -1;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Header */
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            padding: 15px 20px; display: flex; justify-content: space-between;
+            align-items: center; z-index: 1000; backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+        .brand { font-weight: 700; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; }
+        .brand span { background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Navigation Dots */
+        .nav-indicator {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 12px; z-index: 100; background: rgba(0,0,0,0.6);
+            padding: 8px 20px; border-radius: 50px; border: 1px solid var(--border);
+            backdrop-filter: blur(15px);
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-dim); opacity: 0.3; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .dot.active { background: var(--primary); transform: scale(1.4); opacity: 1; box-shadow: 0 0 10px var(--glow-primary); }
+
+        /* Layout */
+        .container { width: 100%; max-width: 520px; padding: 90px 20px 100px; }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg); backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border); border-radius: 28px;
+            padding: 35px 25px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            position: relative; overflow: hidden;
+        }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: var(--gradient-main); opacity: 0.8;
+        }
+
+        /* Typography */
+        h1 { font-weight: 700; font-size: 1.8rem; margin-bottom: 10px; text-align: center; color: #fff; }
+        p.subtitle { color: var(--text-dim); text-align: center; margin-bottom: 30px; font-size: 0.9rem; line-height: 1.5; }
+
+        /* Inputs */
+        .input-group { margin-bottom: 18px; position: relative; }
+        label { display: block; margin-bottom: 8px; font-size: 0.75rem; color: var(--primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; }
+        
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-dim); transition: 0.3s; }
+        
+        input, select {
+            width: 100%; padding: 16px 18px 16px 48px; background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border); border-radius: 14px; color: #fff;
+            font-size: 0.95rem; transition: 0.3s; outline: none;
+        }
+        input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); box-shadow: 0 0 0 3px rgba(0, 242, 234, 0.1); }
+        input:focus + i { color: var(--primary); }
+
+        /* Platform Grid */
+        .platform-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .platform-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 6px; background: var(--glass); padding: 12px; border-radius: 16px;
+            cursor: pointer; border: 1px solid transparent; transition: 0.3s;
+        }
+        .platform-item i { font-size: 1.4rem; color: var(--text-dim); transition: 0.3s; }
+        .platform-item span { font-size: 0.7rem; font-weight: 500; color: var(--text-dim); }
+        
+        .platform-item.selected { background: rgba(0, 242, 234, 0.08); border-color: var(--primary); }
+        .platform-item.selected i { color: var(--primary); transform: translateY(-2px); }
+        .platform-item.selected span { color: #fff; }
+        .platform-item input { display: none; }
+
+        /* Buttons */
+        .btn {
+            width: 100%; padding: 16px; border: none; border-radius: 14px;
+            font-weight: 600; font-size: 1rem; cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            text-decoration: none; position: relative; overflow: hidden;
+        }
+        .btn-primary { background: var(--gradient-main); color: #fff; box-shadow: 0 4px 15px rgba(0, 242, 234, 0.2); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 0, 85, 0.3); }
+        
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { border-color: var(--text-dim); background: rgba(255,255,255,0.05); }
+
+        /* --- CUSTOM AD BANNER STYLES --- */
+        .custom-ad {
+            display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(90deg, rgba(0, 136, 204, 0.15) 0%, rgba(0, 136, 204, 0.05) 100%);
+            border: 1px solid rgba(0, 136, 204, 0.3);
+            padding: 16px 20px; border-radius: 16px; margin: 20px 0;
+            text-decoration: none; color: var(--text);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; overflow: hidden;
+        }
+        .custom-ad:hover { 
+            background: rgba(0, 136, 204, 0.2); 
+            border-color: #0088cc; 
+            transform: translateY(-3px) scale(1.01); 
+            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.2);
+        }
+        .ad-content { display: flex; align-items: center; gap: 15px; }
+        .ad-icon { 
+            width: 40px; height: 40px; background: #0088cc; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: white; box-shadow: 0 0 15px rgba(0, 136, 204, 0.5);
+        }
+        .ad-text h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; color: #fff; }
+        .ad-text p { font-size: 0.75rem; color: var(--text-dim); }
+        .ad-arrow { font-size: 0.9rem; color: #0088cc; }
+        /* ------------------------------ */
+
+        /* QR & Result */
+        .qr-card {
+            background: #fff; padding: 20px; border-radius: 20px;
+            margin: 25px auto; width: fit-content; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        #qr-code img { border-radius: 8px; }
+        .watermark-text { color: #000; font-size: 0.65rem; margin-top: 12px; font-weight: 800; letter-spacing: 1px; opacity: 0.7; }
+
+        /* Task List */
+        .task-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            color: var(--text); margin-bottom: 10px; justify-content: space-between;
+            padding: 14px;
+        }
+        .task-btn:hover:not(:disabled) { background: rgba(255,255,255,0.07); border-color: var(--text-dim); }
+        .task-btn.completed { border-color: var(--primary); background: rgba(0, 242, 234, 0.05); color: var(--primary); pointer-events: none; }
+        
+        /* Progress Bar */
+        .progress-wrapper { height: 4px; width: 100%; background: rgba(255,255,255,0.1); border-radius: 2px; margin-bottom: 25px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--gradient-main); width: 0%; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Footer Credits */
+        .dev-credits {
+            text-align: center; margin-top: 20px; font-size: 0.7rem; color: var(--text-dim);
+            padding: 10px; border-top: 1px solid var(--border);
+        }
+        .dev-credits a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .dev-credits a:hover { text-decoration: underline; }
+
+        /* Toast */
+        #toast {
+            position: fixed; top: 25px; left: 50%; transform: translateX(-50%) translateY(-150%);
+            background: #fff; color: #000; padding: 10px 24px; border-radius: 50px;
+            font-weight: 600; font-size: 0.9rem; transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px;
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+        #toast i { color: var(--secondary); }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .spin { animation: rotate 1s linear infinite; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        
+        /* Social Colors */
+        .yt { color: #ff0000; } .tg { color: #0088cc; } .fb { color: #1877f2; }
+        .ig { color: #E1306C; } .x { color: #fff; } .tt { color: #000; }
+
+        /* Media Queries */
+        @media (max-width: 480px) {
+            .container { padding: 80px 15px 90px; }
+            .card { padding: 25px 18px; }
+            h1 { font-size: 1.5rem; }
+            .platform-selector { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div class="bg-mesh"></div>
+    <div id="toast"><i class="fas fa-check-circle"></i> <span>Message</span></div>
+
+    <div class="top-nav">
+        <div class="brand">
+            <i class="fas fa-shield-virus" style="color: var(--primary);"></i> LinkGuard<span>PRO</span>
+        </div>
+        <div class="action-btns">
+            <button class="theme-toggle" onclick="toggleTheme()" style="background:none; border:none; color:var(--text); font-size:1.2rem; cursor:pointer;">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="nav-indicator">
+        <div class="dot active" id="dot-home"></div>
+        <div class="dot" id="dot-create"></div>
+        <div class="dot" id="dot-result"></div>
+    </div>
+
+    <div class="container">
+        
+        <!-- SECTION 1: HOME -->
+        <section id="section-home" class="section active">
+            <div class="card" style="text-align: center; padding: 50px 30px;">
+                <div style="font-size: 3.5rem; margin-bottom: 25px; background: var(--gradient-main); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h1>Ultra Secure Link Locker</h1>
+                <p class="subtitle">Protect your premium content with social tasks. <br>Made by <strong>Oye Pagloo</strong> & <strong>@Divyansh Deewana </strong>.</p>
+                
+                <button onclick="navigate('create')" class="btn btn-primary" style="height: 55px; font-size: 1.1rem;">
+                    Create Protected Link <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <div style="margin-top: 30px; display: flex; justify-content: center; gap: 25px;">
+                    <div style="text-align: center;">
+                        <i class="fas fa-bolt" style="color: var(--primary); font-size: 1.2rem; margin-bottom: 5px;"></i>
+                        <div style="font-size: 0.7rem; color: var(--text-dim);">INSTANT</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <i class="fas fa-fingerprint" style="color: var(--secondary); font-size: 1.2rem; margin-bottom: 5px;"></i>
+                        <div style="font-size: 0.7rem; color: var(--text-dim);">ENCRYPTED</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <i class="fas fa-chart-line" style="color: #00ff88; font-size: 1.2rem; margin-bottom: 5px;"></i>
+                        <div style="font-size: 0.7rem; color: var(--text-dim);">GROWTH</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MANUAL AD 1: Between Home and Create -->
+        <a href="https://t.me/source_code_4web" target="_blank" class="custom-ad">
+            <div class="ad-content">
+                <div class="ad-icon"><i class="fab fa-telegram"></i></div>
+                <div class="ad-text">
+                    <h4>Join Now</h4>
+                    <p>Get premium tools & updates!</p>
+                </div>
+            </div>
+            <div class="ad-arrow"><i class="fas fa-chevron-right"></i></div>
+        </a>
+
+        <!-- SECTION 2: CREATE -->
+        <section id="section-create" class="section">
+            <div class="card">
+                <h2 style="margin-bottom: 20px; font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: 15px;">Configuration</h2>
+                
+                <div class="input-group">
+                    <label>Target Destination</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-link"></i>
+                        <input type="url" id="target-url" placeholder="https://example.com/file.zip">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                    <div class="input-group">
+                        <label>Password (Opt)</label>
+                        <input type="password" id="lock-pass" placeholder="Set Secret" style="padding-left: 15px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Expiry (Opt)</label>
+                        <input type="date" id="lock-expiry" style="padding-left: 15px; color-scheme: dark;">
+                    </div>
+                </div>
+
+                <label style="margin-bottom: 12px;">Select Verification Tasks</label>
+                <div class="platform-selector">
+                    <div class="platform-item" onclick="toggleTask('yt')">
+                        <i class="fab fa-youtube yt"></i><span>YouTube</span>
+                        <input type="checkbox" id="check-yt">
+                    </div>
+                    <div class="platform-item" onclick="toggleTask('tg')">
+                        <i class="fab fa-telegram tg"></i><span>Telegram</span>
+                        <input type="checkbox" id="check-tg">
+                    </div>
+                    <div class="platform-item" onclick="toggleTask('fb')">
+                        <i class="fab fa-facebook fb"></i><span>Facebook</span>
+                        <input type="checkbox" id="check-fb">
+                    </div>
+                    <div class="platform-item" onclick="toggleTask('ig')">
+                        <i class="fab fa-instagram ig"></i><span>Instagram</span>
+                        <input type="checkbox" id="check-ig">
+                    </div>
+                    <div class="platform-item" onclick="toggleTask('x')">
+                        <i class="fab fa-x-twitter x"></i><span>X / Twitter</span>
+                        <input type="checkbox" id="check-x">
+                    </div>
+                    <div class="platform-item" onclick="toggleTask('tt')">
+                        <i class="fab fa-tiktok tt"></i><span>TikTok</span>
+                        <input type="checkbox" id="check-tt">
+                    </div>
+                </div>
+
+                <!-- Dynamic Link Inputs -->
+                <div id="links-container">
+                    <div class="input-group hidden" id="group-yt"><div class="input-wrapper"><i class="fab fa-youtube yt"></i><input type="url" id="link-yt" placeholder="YouTube Link"></div></div>
+                    <div class="input-group hidden" id="group-tg"><div class="input-wrapper"><i class="fab fa-telegram tg"></i><input type="url" id="link-tg" placeholder="Telegram Link"></div></div>
+                    <div class="input-group hidden" id="group-fb"><div class="input-wrapper"><i class="fab fa-facebook fb"></i><input type="url" id="link-fb" placeholder="Facebook Link"></div></div>
+                    <div class="input-group hidden" id="group-ig"><div class="input-wrapper"><i class="fab fa-instagram ig"></i><input type="url" id="link-ig" placeholder="Instagram Link"></div></div>
+                    <div class="input-group hidden" id="group-x"><div class="input-wrapper"><i class="fab fa-x-twitter x"></i><input type="url" id="link-x" placeholder="X / Twitter Link"></div></div>
+                    <div class="input-group hidden" id="group-tt"><div class="input-wrapper"><i class="fab fa-tiktok tt"></i><input type="url" id="link-tt" placeholder="TikTok Link"></div></div>
+                </div>
+
+                <button onclick="generateLocker()" class="btn btn-primary">
+                    <i class="fas fa-fingerprint"></i> Generate Secure Link
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 3: RESULT -->
+        <section id="section-result" class="section">
+            <div class="card" style="text-align: center;">
+                <div style="color: var(--primary); font-size: 3rem; margin-bottom: 10px;"><i class="fas fa-check-circle"></i></div>
+                <h1>Locker Created!</h1>
+                <p class="subtitle">Your secure link is ready to share.</p>
+                
+                <div class="input-group">
+                    <input type="text" id="final-link" readonly style="text-align: center; padding-left: 15px; border-color: var(--primary); font-family: monospace;">
+                </div>
+
+                <div class="qr-card" id="qr-area">
+                    <div id="qr-code"></div>
+                    <div class="watermark-text">Secured by LinkGuard<br>Dev: AIFusex & @Sudais_alam</div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <button onclick="copyLink()" class="btn btn-primary"><i class="fas fa-copy"></i> Copy</button>
+                    <button onclick="downloadQR()" class="btn btn-outline"><i class="fas fa-download"></i> Save QR</button>
+                </div>
+
+                <!-- MANUAL AD 2: Inside Result Page -->
+                <a href="https://t.me/sudaisfuseX" target="_blank" class="custom-ad" style="margin-top: 25px;">
+                    <div class="ad-content">
+                        <div class="ad-icon"><i class="fab fa-telegram"></i></div>
+                        <div class="ad-text">
+                            <h4>Need Support?</h4>
+                            <p>Join Our Channel</p>
+                        </div>
+                    </div>
+                    <div class="ad-arrow"><i class="fas fa-external-link-alt"></i></div>
+                </a>
+
+                <div class="dev-credits">
+                    Created by <a href="https://t.me/source_code_4web" target="_blank">Oye Pagloo</a> & <a href="https://t.me/source_code_4web" target="_blank">@Divyansh Deewana </a>
+                </div>
+
+                <button onclick="location.reload()" class="btn btn-outline" style="margin-top: 25px; border: none;">
+                    <i class="fas fa-redo"></i> Create Another
+                </button>
+            </div>
+        </section>
+
+        <!-- SECTION 4: UNLOCK -->
+        <section id="section-unlock" class="section">
+            <div class="card">
+                <div class="progress-wrapper"><div class="progress-fill" id="p-fill"></div></div>
+                
+                <div id="lock-icon" style="text-align: center; font-size: 3rem; color: var(--secondary); margin-bottom: 15px; text-shadow: 0 0 20px rgba(255,0,85,0.4);">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h1 id="unlock-title">Content Locked</h1>
+                <p class="subtitle">Secure verification required to proceed.</p>
+                
+                <div id="pw-area" class="hidden input-group">
+                    <input type="password" id="input-pw" placeholder="Enter Access Password" style="text-align: center; border-color: var(--secondary);">
+                </div>
+
+                <div id="task-list"></div>
+
+                <button id="unlock-btn" class="btn" style="background: #333; cursor: not-allowed; opacity: 0.5;" disabled>
+                    Unlock Destination <i class="fas fa-lock-open"></i>
+                </button>
+
+                <div id="timer-text" class="hidden" style="text-align: center; margin-top: 15px; font-weight: 700; color: var(--primary);"></div>
+                
+                <div class="dev-credits">
+                    Secure Technology by <a href="https://t.me/source_code_4web" target="_blank">Oye Pagloo</a>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- Configuration & State ---
+        const i18n = {
+            en: {
+                verifying: "Verifying...", completed: "Verified", unlock: "Unlock Now",
+                expired: "Link Expired", wrong_pw: "Wrong Password", copied: "Copied!",
+                error: "Invalid URL", accept_terms: "Please accept terms."
+            }
+        };
+
+        // --- UI Functions ---
+        function toggleTheme() {
+            const icon = document.querySelector('.theme-toggle i');
+            if(document.body.getAttribute('data-theme') === 'dark') {
+                document.body.setAttribute('data-theme', 'light');
+                icon.className = 'fas fa-sun';
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-moon';
+            }
+        }
+
+        function navigate(page) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+            document.getElementById('section-' + page).classList.add('active');
+            const dot = document.getElementById('dot-' + page);
+            if(dot) dot.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showToast(msg, iconClass = "fas fa-check-circle") {
+            const toast = document.getElementById('toast');
+            toast.querySelector('i').className = iconClass;
+            toast.querySelector('span').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function toggleTask(platform) {
+            const cb = document.getElementById('check-' + platform);
+            cb.checked = !cb.checked;
+            cb.parentElement.classList.toggle('selected', cb.checked);
+            document.getElementById('group-' + platform).classList.toggle('hidden', !cb.checked);
+        }
+
+        // --- Core Generation Logic ---
+        function generateLocker() {
+            const target = document.getElementById('target-url').value;
+            if(!target) return showToast("Please enter a destination URL", "fas fa-exclamation-triangle");
+
+            const config = {
+                dest: target,
+                pw: document.getElementById('lock-pass').value,
+                exp: document.getElementById('lock-expiry').value,
+                tasks: {}
+            };
+
+            // Collect selected tasks
+            ['yt', 'tg', 'fb', 'ig', 'x', 'tt'].forEach(p => {
+                if(document.getElementById('check-' + p).checked) {
+                    config.tasks[p] = document.getElementById('link-' + p).value;
+                }
+            });
+
+            // Basic encoding (Client-side only security)
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config))));
+            const url = window.location.href.split('?')[0] + "?data=" + encoded;
+            
+            // Render Result
+            document.getElementById('final-link').value = url;
+            document.getElementById('qr-code').innerHTML = "";
+            new QRCode(document.getElementById("qr-code"), {
+                text: url, width: 160, height: 160,
+                colorDark : "#000000", colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            navigate('result');
+        }
+
+        function copyLink() {
+            const el = document.getElementById("final-link");
+            el.select();
+            document.execCommand("copy");
+            showToast("Link Copied!");
+        }
+
+        function downloadQR() {
+            html2canvas(document.querySelector("#qr-area")).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Secure-QR.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        // --- Unlock Logic ---
+        let total = 0, done = 0, finalURL = "", passReq = "";
+
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const data = params.get('data');
+
+            if(data) {
+                // Switch to unlock mode
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById('section-unlock').classList.add('active');
+                document.querySelector('.nav-indicator').style.display = 'none';
+                document.querySelector('.top-nav').style.display = 'none';
+
+                try {
+                    const config = JSON.parse(decodeURIComponent(escape(atob(data))));
+                    
+                    // Check Expiry
+                    if(config.exp && new Date(config.exp) < new Date().setHours(0,0,0,0)) {
+                        document.getElementById('unlock-title').innerText = "Expired";
+                        document.querySelector('.subtitle').innerText = "This security link has expired.";
+                        return;
+                    }
+
+                    finalURL = config.dest;
+                    passReq = config.pw;
+                    if(passReq) document.getElementById('pw-area').classList.remove('hidden');
+                    
+                    renderTasks(config.tasks);
+                } catch(e) { 
+                    console.error("Corrupt Data"); 
+                    document.getElementById('unlock-title').innerText = "Error";
+                    document.querySelector('.subtitle').innerText = "Invalid Locker Data.";
+                }
+            }
+        };
+
+        function renderTasks(tasks) {
+            const list = document.getElementById('task-list');
+            const meta = {
+                yt: {n: 'Subscribe YouTube', i: 'fab fa-youtube', c: 'yt'},
+                tg: {n: 'Join Channel', i: 'fab fa-telegram', c: 'tg'},
+                fb: {n: 'Follow Page', i: 'fab fa-facebook', c: 'fb'},
+                ig: {n: 'Follow on IG', i: 'fab fa-instagram', c: 'ig'},
+                x: {n: 'Follow on X', i: 'fab fa-x-twitter', c: 'x'},
+                tt: {n: 'Follow TikTok', i: 'fab fa-tiktok', c: 'tt'}
+            };
+
+            for(const [key, link] of Object.entries(tasks)) {
+                if(link) {
+                    total++;
+                    const btn = document.createElement('button');
+                    btn.className = "btn task-btn";
+                    btn.innerHTML = `<span><i class="${meta[key].i} ${meta[key].c}"></i> &nbsp; ${meta[key].n}</span> <i class="fas fa-external-link-alt"></i>`;
+                    btn.onclick = function() {
+                        window.open(link, '_blank');
+                        if(!this.classList.contains('completed')) {
+                            // Simulating network verification
+                            const originalHTML = this.innerHTML;
+                            this.innerHTML = `<span><i class="fas fa-circle-notch spin"></i> &nbsp; ${i18n.en.verifying}</span>`;
+                            
+                            setTimeout(() => {
+                                this.classList.add('completed');
+                                this.innerHTML = `<span><i class="fas fa-check"></i> &nbsp; ${i18n.en.completed}</span> <i class="fas fa-check"></i>`;
+                                done++;
+                                updateProgress();
+                                if(done === total) checkReady();
+                            }, 2500); // 2.5s fake verification delay
+                        }
+                    };
+                    list.appendChild(btn);
+                }
+            }
+        }
+
+        function updateProgress() {
+            const pct = (done / total) * 100;
+            document.getElementById('p-fill').style.width = pct + "%";
+        }
+
+        function checkReady() {
+            const b = document.getElementById('unlock-btn');
+            b.disabled = false;
+            b.style.background = "var(--gradient-main)";
+            b.style.opacity = "1";
+            b.style.cursor = "pointer";
+            b.innerHTML = `Unlock Destination <i class="fas fa-arrow-right"></i>`;
+            
+            document.getElementById('lock-icon').innerHTML = '<i class="fas fa-lock-open" style="color:var(--primary)"></i>';
+            document.getElementById('lock-icon').style.textShadow = "0 0 20px rgba(0,242,234,0.4)";
+            
+            b.onclick = () => {
+                if(passReq && document.getElementById('input-pw').value !== passReq) {
+                    showToast("Wrong Password", "fas fa-times-circle");
+                    document.getElementById('input-pw').style.borderColor = "red";
+                    return;
+                }
+                
+                let count = 3;
+                const timerDiv = document.getElementById('timer-text');
+                timerDiv.classList.remove('hidden');
+                b.innerHTML = `<i class="fas fa-circle-notch spin"></i> Redirecting`;
+                
+                const timer = setInterval(() => {
+                    timerDiv.innerText = `Redirecting in ${count}s...`;
+                    count--;
+                    if(count < 0) {
+                        clearInterval(timer);
+                        window.location.href = finalURL;
+                    }
+                }, 1000);
+            };
+        }
+    </script>
+</body>
+</html>
